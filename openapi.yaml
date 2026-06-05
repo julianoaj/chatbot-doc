@@ -1,15 +1,24 @@
 openapi: 3.1.0
 info:
   title: Template API
-  description: API for generating template links
+  description: API para gerar links de templates
   version: 1.0.0
+  contact:
+    name: Your Name / Team
+    email: your@email.com
 
 servers:
   - url: https://your-api-domain.com
-    description: Production server
+    description: Production
+  - url: http://localhost:3000
+    description: Development
+
+tags:
+  - name: Templates
+    description: Operations related to template links
 
 paths:
-  /api/generate-link:   # ← Change this to your real endpoint path
+  /api/generate-link:
     post:
       summary: Gerar Link do Template
       description: Gera um link compartilhável para um template
@@ -24,11 +33,16 @@ paths:
               properties:
                 templateName:
                   type: string
+                  description: Nome do template
                   example: "Contrato Q2 2026"
                 expiresIn:
                   type: integer
-                  description: Dias até expirar
+                  description: Quantidade de dias até o link expirar
                   example: 7
+                customFields:
+                  type: object
+                  description: Campos personalizados (opcional)
+                  additionalProperties: true
               required:
                 - templateName
       responses:
@@ -44,12 +58,23 @@ paths:
                     example: true
                   link:
                     type: string
+                    format: url
                     example: "https://yourapp.com/template/abc123xyz"
                   expiresAt:
                     type: string
                     format: date-time
                     example: "2026-06-12T10:00:00Z"
         '400':
-          description: Dados inválidos
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "templateName é obrigatório"
         '401':
           description: Não autorizado
+        '500':
+          description: Erro interno do servidor
