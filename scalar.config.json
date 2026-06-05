@@ -2,11 +2,11 @@
   "$schema": "https://cdn.scalar.com/schema/scalar-config-next.json",
   "scalar": "2.0.0",
   "info": {
-    "title": "chatbotzap-doc",
-    "description": "Documentation for chatbotzap-doc"
+    "title": "Chatrapido",
+    "description": "Chatrapido API"
   },
   "siteConfig": {
-    "subdomain": "chatbotzap-doc"
+    "subdomain": "chatrapido"
   },
   "navigation": {
     "routes": {
@@ -21,7 +21,7 @@
             "showInSidebar": true
           },
           "/openapi": {
-            "title": "Scalar Galaxy",
+            "title": "Chatrapido",
             "type": "openapi",
             "mode": "flat",
             "singlePage": false,
