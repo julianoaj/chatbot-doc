@@ -1,0 +1,35 @@
+{
+  "$schema": "https://cdn.scalar.com/schema/scalar-config-next.json",
+  "scalar": "2.0.0",
+  "info": {
+    "title": "chatbotzap-doc",
+    "description": "Documentation for chatbotzap-doc"
+  },
+  "siteConfig": {
+    "subdomain": "chatbotzap-doc"
+  },
+  "navigation": {
+    "routes": {
+      "/": {
+        "type": "group",
+        "title": "Documentation",
+        "children": {
+          "/": {
+            "title": "Quickstart",
+            "type": "page",
+            "filepath": "docs-quickstart.md",
+            "showInSidebar": true
+          },
+          "/openapi": {
+            "title": "Scalar Galaxy",
+            "type": "openapi",
+            "mode": "flat",
+            "singlePage": false,
+            "showInSidebar": true,
+            "filepath": "docs-openapi.json"
+          }
+        }
+      }
+    }
+  }
+}
