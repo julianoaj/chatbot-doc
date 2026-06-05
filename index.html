@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gerar Link - API Docs</title>
+  <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+  <style>
+    body { margin: 0; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script>
+    Scalar.createApiReference('#app', {
+      spec: {
+        url: '/openapi.yaml'     // Important: starts with /
+      },
+      theme: 'default',
+      layout: 'modern',
+      showSidebar: true,
+      hideModels: false
+    })
+  </script>
+</body>
+</html>
