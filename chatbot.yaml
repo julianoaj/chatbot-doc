@@ -1,0 +1,55 @@
+openapi: 3.1.0
+info:
+  title: Template API
+  description: API for generating template links
+  version: 1.0.0
+
+servers:
+  - url: https://your-api-domain.com
+    description: Production server
+
+paths:
+  /api/generate-link:   # ← Change this to your real endpoint path
+    post:
+      summary: Gerar Link do Template
+      description: Gera um link compartilhável para um template
+      tags:
+        - Templates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                templateName:
+                  type: string
+                  example: "Contrato Q2 2026"
+                expiresIn:
+                  type: integer
+                  description: Dias até expirar
+                  example: 7
+              required:
+                - templateName
+      responses:
+        '200':
+          description: Link gerado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  link:
+                    type: string
+                    example: "https://yourapp.com/template/abc123xyz"
+                  expiresAt:
+                    type: string
+                    format: date-time
+                    example: "2026-06-12T10:00:00Z"
+        '400':
+          description: Dados inválidos
+        '401':
+          description: Não autorizado
