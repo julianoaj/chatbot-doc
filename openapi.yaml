@@ -1,27 +1,21 @@
 openapi: 3.1.0
 info:
-  title: Template API
-  description: API para gerar links de templates
+  title: Gerar Link de Template
+  description: API simples para geração de links de templates
   version: 1.0.0
-  contact:
-    name: Your Name / Team
-    email: your@email.com
 
 servers:
-  - url: https://your-api-domain.com
-    description: Production
+  - url: https://api.seudominio.com
+    description: Produção
   - url: http://localhost:3000
-    description: Development
-
-tags:
-  - name: Templates
-    description: Operations related to template links
+    description: Local
 
 paths:
   /api/generate-link:
     post:
-      summary: Gerar Link do Template
-      description: Gera um link compartilhável para um template
+      summary: Gerar Link
+      description: Cria um link compartilhável para um template
+      operationId: generateTemplateLink
       tags:
         - Templates
       requestBody:
@@ -34,15 +28,11 @@ paths:
                 templateName:
                   type: string
                   description: Nome do template
-                  example: "Contrato Q2 2026"
+                  example: "Contrato de Serviço - Junho 2026"
                 expiresIn:
                   type: integer
-                  description: Quantidade de dias até o link expirar
+                  description: Dias de validade do link (opcional)
                   example: 7
-                customFields:
-                  type: object
-                  description: Campos personalizados (opcional)
-                  additionalProperties: true
               required:
                 - templateName
       responses:
@@ -58,23 +48,13 @@ paths:
                     example: true
                   link:
                     type: string
-                    format: url
-                    example: "https://yourapp.com/template/abc123xyz"
+                    format: uri
+                    example: "https://app.seudominio.com/template/abc123xyz"
                   expiresAt:
                     type: string
                     format: date-time
-                    example: "2026-06-12T10:00:00Z"
+                    example: "2026-06-12T12:00:00Z"
         '400':
-          description: Requisição inválida
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "templateName é obrigatório"
+          description: Erro de validação
         '401':
           description: Não autorizado
-        '500':
-          description: Erro interno do servidor
