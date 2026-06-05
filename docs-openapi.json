@@ -7,12 +7,97 @@
   },
   "servers": [
     {
-      "url": "https://api.chatrapido.com"
+      "url": "https://chatrapido.com/{token}",
+      "variables": {
+        "token": {
+          "default": "seu-token-gerado",
+          "description": "O token de acesso gerado no sistema para compor a URL"
+        }
+      }
     }
   ],
-  "paths": {},
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Chamadas",
+      "description": "Operações relacionadas a chamadas e envios"
+    }
+  ],
+  "paths": {
+    "/send-template": {
+      "post": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chamadas"
+        ],
+        "summary": "Send Template",
+        "description": "Envio de templates de mensagens via API REST.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string",
+                    "description": "Número do destinatário no formato DDI + DDD + Número (ex: 55999999999)",
+                    "example": "55999999999"
+                  },
+                  "template_name": {
+                    "type": "string",
+                    "description": "Nome do template cadastrado no sistema",
+                    "example": "boas_vindas"
+                  }
+                },
+                "required": [
+                  "phone",
+                  "template_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mensagem enviada com sucesso"
+          },
+          "422": {
+            "description": "Erro de validação (Ex: template_name não existe)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "template_name doesn't exist."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+  },
   "components": {
     "schemas": {},
-    "securitySchemes": {}
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Insira o token Bearer"
+      }
+    }
   }
+}
 }

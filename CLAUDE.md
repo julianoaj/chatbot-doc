@@ -5,7 +5,6 @@ Documentation project for Chatrapido API using Scalar.
 ## Project Structure
 - `docs-openapi.json`: OpenAPI specification for the API.
 - `scalar.config.json`: Scalar configuration for the documentation site.
-- `docs-quickstart.md`: Quickstart guide.
 
 ## Development Commands
 - `npx @scalar/cli project preview`: Preview documentation locally.
