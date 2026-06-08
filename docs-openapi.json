@@ -2,16 +2,16 @@
   "openapi": "3.1.1",
   "info": {
     "title": "Chatrapido",
-    "description": "Chatrapido API",
+    "description": "Chatrapido API. Todas as chamadas exigem autenticação dupla: o `{token}` na URL da rota e o header `Authorization: Bearer <token>`. A API valida se ambos os valores correspondem a uma integração válida.",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "https://chatrapido.com/{token}",
+      "url": "https://chatrapido.com/openapi/{token}",
       "variables": {
         "token": {
           "default": "seu-token-gerado",
-          "description": "O token de acesso gerado no sistema para compor a URL"
+          "description": "Token gerado no sistema. Deve ser enviado na URL e corresponder ao valor do header Bearer."
         }
       }
     }
@@ -39,7 +39,7 @@
           "Chamadas"
         ],
         "summary": "Send Template",
-        "description": "Envio de templates de mensagens via API REST.",
+        "description": "Envio de templates de mensagens via API REST.\n\n**Autenticação**\n\n1. Lê `{token}` da rota (variável de URL do servidor).\n2. Lê `Authorization: Bearer <token>` do header.\n3. Se qualquer um estiver ausente, retorna `401` com `\"Missing authentication credentials.\"`.\n4. Valida se o `{token}` da rota e o token do header correspondem a uma integração válida.\n5. Se as credenciais forem inválidas, retorna `401` com `\"Invalid authentication credentials.\"`.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -67,18 +67,108 @@
         },
         "responses": {
           "200": {
-            "description": "Mensagem enviada com sucesso"
-          },
-          "422": {
-            "description": "Erro de validação (Ex: template_name não existe)",
+            "description": "Template enviado com sucesso.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "template_name doesn't exist."
+                  "$ref": "#/components/schemas/MessageResponse"
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Envio bem-sucedido",
+                    "value": {
+                      "message": "Template sent successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Falha na autenticação. Retornado quando as credenciais estão ausentes ou são inválidas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingCredentials": {
+                    "summary": "Credenciais ausentes",
+                    "description": "Retornado quando `{token}` na rota ou o header `Authorization: Bearer` está ausente.",
+                    "value": {
+                      "error": "Missing authentication credentials."
+                    }
+                  },
+                  "invalidCredentials": {
+                    "summary": "Credenciais inválidas",
+                    "description": "Retornado quando o `{token}` da rota e o token do header não correspondem a uma integração válida.",
+                    "value": {
+                      "error": "Invalid authentication credentials."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado. Retornado quando há problema de conexão no Chatrapido ou quando o template não existe.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                },
+                "examples": {
+                  "connectionNotFound": {
+                    "summary": "Conexão não encontrada",
+                    "value": {
+                      "message": "Connection not found"
+                    }
+                  },
+                  "templateNotFound": {
+                    "summary": "Template não encontrado",
+                    "value": {
+                      "message": "Template not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro de validação ou falha no envio. Retornado quando campos obrigatórios estão ausentes ou quando o envio do template falha na META.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MessageResponse"
+                    }
+                  ]
+                },
+                "examples": {
+                  "requiredFields": {
+                    "summary": "Campos obrigatórios ausentes",
+                    "description": "Retornado quando `phone` e/ou `template_name` não são enviados.",
+                    "value": {
+                      "message": "The phone field is required. (and 1 more error)",
+                      "errors": {
+                        "phone": [
+                          "The phone field is required."
+                        ],
+                        "template_name": [
+                          "The template name field is required."
+                        ]
+                      }
+                    }
+                  },
+                  "metaSendFailed": {
+                    "summary": "Falha no envio (META)",
+                    "description": "Retornado quando o envio do template falha. O campo `message` contém o erro retornado pela META.",
+                    "value": {
+                      "message": "(#131008) Required parameter is missing"
                     }
                   }
                 }
@@ -87,17 +177,65 @@
           }
         }
       }
+    }
   },
   "components": {
-    "schemas": {},
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Mensagem de erro"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "MessageResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem de erro"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "ValidationErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Resumo do erro de validação"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Erros por campo"
+          }
+        },
+        "required": [
+          "message",
+          "errors"
+        ]
+      }
+    },
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT",
-        "description": "Insira o token Bearer"
+        "description": "Token Bearer gerado no sistema. Deve ser enviado no header `Authorization: Bearer <token>` e corresponder ao `{token}` da URL."
       }
     }
   }
-}
 }
