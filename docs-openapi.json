@@ -221,6 +221,170 @@
           }
         }
       }
+    },
+    "/whatsapp-link": {
+      "post": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chamadas"
+        ],
+        "summary": "WhatsApp Link",
+        "description": "Gera um link de conversa do WhatsApp (click-to-chat) e um QR Code a partir de uma mensagem.\n\nO número de destino é obtido automaticamente da instância conectada no Chatrapido — não é necessário enviar `phone` no payload.\n\nO link segue o formato oficial do WhatsApp: `https://wa.me/{phone}?text={message}`.\n\n**Autenticação**\n\n1. Lê `{token}` da rota (variável de URL do servidor).\n2. Lê `Authorization: Bearer <token>` do header.\n3. Se qualquer um estiver ausente, retorna `401` com `\"Missing authentication credentials.\"`.\n4. Valida se o `{token}` da rota e o token do header correspondem a uma integração válida.\n5. Se as credenciais forem inválidas, retorna `401` com `\"Invalid authentication credentials.\"`.\n6. Se o endpoint `whatsapp_link` não estiver ativo nas configurações de API, retorna `403` com `\"Endpoint is not active.\"`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "description": "Mensagem pré-preenchida enviada automaticamente quando o destinatário abrir o link no WhatsApp.",
+                    "maxLength": 500,
+                    "example": "Olá! Gostaria de mais informações."
+                  }
+                },
+                "required": [
+                  "message"
+                ]
+              },
+              "examples": {
+                "default": {
+                  "summary": "Mensagem personalizada",
+                  "description": "Payload com a mensagem que será exibida ao abrir o link.",
+                  "value": {
+                    "message": "Olá! Gostaria de mais informações."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Link e QR Code gerados com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhatsappLinkResponse"
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Geração bem-sucedida",
+                    "value": {
+                      "link": "https://wa.me/5511999999999?text=Ol%C3%A1!%20Gostaria%20de%20mais%20informa%C3%A7%C3%B5es.",
+                      "qr_code_url": "https://chatrapido.com/storage/qrcodes/1/whatsapp-link.svg"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Falha na autenticação. Retornado quando as credenciais estão ausentes ou são inválidas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingCredentials": {
+                    "summary": "Credenciais ausentes",
+                    "description": "Retornado quando `{token}` na rota ou o header `Authorization: Bearer` está ausente.",
+                    "value": {
+                      "error": "Missing authentication credentials."
+                    }
+                  },
+                  "invalidCredentials": {
+                    "summary": "Credenciais inválidas",
+                    "description": "Retornado quando o `{token}` da rota e o token do header não correspondem a uma integração válida.",
+                    "value": {
+                      "error": "Invalid authentication credentials."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Endpoint desativado. Retornado quando o endpoint `whatsapp_link` não está ativo nas configurações de API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                },
+                "examples": {
+                  "endpointInactive": {
+                    "summary": "Endpoint inativo",
+                    "value": {
+                      "message": "Endpoint is not active."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado. Retornado quando a instância não possui conexão WhatsApp ou o número não está configurado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                },
+                "examples": {
+                  "connectionNotFound": {
+                    "summary": "Conexão não encontrada",
+                    "value": {
+                      "message": "Connection not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro de validação. Retornado quando o campo `message` está ausente, excede 500 caracteres ou quando o número da instância é inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MessageResponse"
+                    }
+                  ]
+                },
+                "examples": {
+                  "requiredMessage": {
+                    "summary": "Campo message ausente",
+                    "description": "Retornado quando `message` não é enviado.",
+                    "value": {
+                      "message": "The message field is required.",
+                      "errors": {
+                        "message": [
+                          "The message field is required."
+                        ]
+                      }
+                    }
+                  },
+                  "invalidPhone": {
+                    "summary": "Número inválido",
+                    "description": "Retornado quando o número da instância conectada é inválido após normalização.",
+                    "value": {
+                      "message": "Invalid phone number."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -288,6 +452,27 @@
         "required": [
           "message",
           "errors"
+        ]
+      },
+      "WhatsappLinkResponse": {
+        "type": "object",
+        "properties": {
+          "link": {
+            "type": "string",
+            "format": "uri",
+            "description": "Link de conversa do WhatsApp no formato wa.me, com a mensagem codificada na query string.",
+            "example": "https://wa.me/5511999999999?text=Ol%C3%A1!%20Gostaria%20de%20mais%20informa%C3%A7%C3%B5es."
+          },
+          "qr_code_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL pública do QR Code SVG gerado a partir do link.",
+            "example": "https://chatrapido.com/storage/qrcodes/1/whatsapp-link.svg"
+          }
+        },
+        "required": [
+          "link",
+          "qr_code_url"
         ]
       }
     },
